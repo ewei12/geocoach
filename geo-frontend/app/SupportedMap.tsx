@@ -14,7 +14,7 @@ export default function SupportedMap() {
       .then((res) => res.json())
       .then((data) => {
         setCountries(
-          data.countries.map((code) => ({
+          data.countries.map((code: string) => ({
             country: code.toLowerCase(),
             value: 1,
           })),
