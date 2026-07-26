@@ -37,7 +37,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "vienna",
+  title: "geocoach",
   description: "lil pup",
 };
 
