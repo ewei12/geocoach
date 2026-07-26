@@ -32,20 +32,20 @@ numpy==2.5.1
 opencv-python-headless==5.0.0.93
 packaging==26.2
 pillow==12.3.0
-pyclipper==1.4.0
+# pyclipper==1.4.0
 pycountry==26.2.16
 Pygments==2.20.0
-python-bidi==0.6.11
+# python-bidi==0.6.11
 PyYAML==6.0.3
 redis==8.0.1
 regex==2026.7.19
 rich==15.0.0
 safetensors==0.8.0
-scikit-image==0.26.0
+# scikit-image==0.26.0
 scikit-learn==1.9.0
 scipy==1.18.0
 setuptools==83.0.0
-shapely==2.1.2
+# shapely==2.1.2
 shellingham==1.5.4
 sympy==1.14.0
 threadpoolctl==3.6.0
