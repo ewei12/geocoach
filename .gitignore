@@ -1,8 +1,10 @@
 # FRONTEND ----------------------------------------
 
 # dependencies
-/node_modules
-/.pnp
+node_modules/
+
+# yarn
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -11,14 +13,14 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage/
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
-/build
+build/
 
 # misc
 .DS_Store
@@ -43,27 +45,24 @@ next-env.d.ts
 
 # BACKEND ----------------------------------------
 
+# ML artifacts
 *.pkl
 *.npz
+*.npy
 model_versions/
 osv5m_filtered/
 checking/
-.env
 
-# venv
+# python
+__pycache__/
+*.pyc
 geo_env/
 
 # training data
 train.csv
 
-# numpy binary artifacts
-*.npy
 
-# python cache
-__pycache__/
-*.pyc
+# MISC --------------------------------------------
 
-
-
-# MISC. ----------------------------------------
-.DS_Store
+.idea/
+.vscode/

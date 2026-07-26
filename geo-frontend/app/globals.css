@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+:root {
+  --background: #1f2a4a;
+  --foreground: #171717;
+}
+
+html,
+body {
+  min-height: 100vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-headline: "Bpmf Zihi Kai Std", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+main {
+  --bg-deep: #1e2a4a;
+  --bg-mid: #4b2e6b;
+  --bg-warm: #b6478f;
+  --bg-glow: #f7b9a8;
+  --accent: #943e9b;
+  --accent-dim: rgba(204, 95, 214, 0.4);
+  --route: #5fb8b0;
+  --text-light: #f5f0e6;
+  --text-muted: #78808d;
+  --text-dark: #000000;
+  font-family: var(--font-body);
+  color: var(--text-light);
+}
+
+.glass-panel {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.45),
+    rgba(255, 255, 255, 0.22)
+  );
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-top-color: rgba(255, 255, 255, 0.75);
+  border-radius: 1rem;
+  box-shadow:
+    0 8px 30px rgba(19, 27, 46, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 0 40px rgba(255, 255, 255, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.lane-dash {
+  animation: dash-drift 1.6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lane-dash {
+    animation: none;
+  }
+}
+@keyframes dash-drift {
+  from {
+    stroke-dashoffset: 32;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes road-scroll {
+  from {
+    transform: translateX(-26px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes corner-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes scan-sweep {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* clouds */
+.cloud-drift {
+  animation-name: cloud-move;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes cloud-move {
+  from {
+    transform: translateX(0) scale(var(--s, 1));
+  }
+  to {
+    transform: translateX(140vw) scale(var(--s, 1));
+  }
+}
+
+.cloud-blob {
+  position: absolute;
+  border-radius: 50%;
+  background: #f5f0e6;
+  opacity: var(--cloud-opacity, 0.1);
+  filter: blur(18px);
+}
