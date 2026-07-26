@@ -822,11 +822,11 @@ export default function Home() {
                       }),
                     ),
                     ...(roadRaw?.any_markings_detected
-                      ? ["white_line", "yellow_line"]
+                      ? (["white_line", "yellow_line"] as const)
                           .filter((k) => roadRaw[k])
                           .map((k) => ({
-                            label: `${roadRaw[k].double_line ? "Double" : "Single"} ${roadRaw[k].pattern} ${k === "yellow_line" ? "yellow" : "white"} line`,
-                            pct: Math.round(roadRaw[k].confidence * 100),
+                            label: `${roadRaw[k]!.double_line ? "Double" : "Single"} ${roadRaw[k]!.pattern} ${k === "yellow_line" ? "yellow" : "white"} line`,
+                            pct: Math.round(roadRaw[k]!.confidence * 100),
                             sub: "Road marking",
                           }))
                       : []),
