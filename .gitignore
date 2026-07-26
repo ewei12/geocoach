@@ -1,0 +1,69 @@
+# FRONTEND ----------------------------------------
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# environment
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+
+# BACKEND ----------------------------------------
+
+*.pkl
+*.npz
+model_versions/
+osv5m_filtered/
+checking/
+.env
+
+# venv
+geo_env/
+
+# training data
+train.csv
+
+# numpy binary artifacts
+*.npy
+
+# python cache
+__pycache__/
+*.pyc
+
+
+
+# MISC. ----------------------------------------
+.DS_Store
