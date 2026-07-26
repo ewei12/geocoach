@@ -19,14 +19,18 @@ MODEL_BACKEND = "logreg"
 
 import joblib
 
+from huggingface_hub import hf_hub_download
+
+HF_REPO_ID = os.environ.get("HF_REPO_ID")
+
 if MODEL_BACKEND == "xgboost":
-    clf = joblib.load(os.path.join(BASE_DIR, "country_model.pkl"))
-    label_encoder = joblib.load(os.path.join(BASE_DIR, "label_encoder.pkl"))
+    clf = joblib.load(hf_hub_download(repo_id=HF_REPO_ID, filename="country_model.pkl"))
+    label_encoder = joblib.load(hf_hub_download(repo_id=HF_REPO_ID, filename="label_encoder.pkl"))
     scaler = None
     classes = label_encoder.classes_
 else:
-    clf = joblib.load(os.path.join(BASE_DIR, "country_classifier.pkl"))
-    scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
+    clf = joblib.load(hf_hub_download(repo_id=HF_REPO_ID, filename="country_classifier.pkl"))
+    scaler = joblib.load(hf_hub_download(repo_id=HF_REPO_ID, filename="scaler.pkl"))
     classes = clf.classes_
 
 device = torch.device(
