@@ -4,24 +4,49 @@ import { useState, useEffect, useRef } from "react";
 import Clouds from "./Clouds";
 import SupportedMap from "./SupportedMap";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+
+type PreviewFile = File & { preview: string };
+
+type VisionPrediction = { label: string; confidence: number };
+type VisionData = Record<string, VisionPrediction[]>;
+
+type RoadLine = {
+  double_line: boolean;
+  pattern: string;
+  confidence: number;
+};
+type RoadRaw = {
+  any_markings_detected: boolean;
+  white_line?: RoadLine;
+  yellow_line?: RoadLine;
+};
+
+type PredictedGuess = { country: string; confidence: number };
+type Country = { name: string; code: string };
+
 export default function Home() {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<PreviewFile | null>(null);
   const [loading, setLoading] = useState(false);
-  const [vision, setVision] = useState({});
-  const [roadData, setRoadData] = useState([]);
-  const [countries, setCountries] = useState([]);
+  const [vision, setVision] = useState<VisionData>({});
+  const [roadData, setRoadData] = useState<string[]>([]);
+  const [countries, setCountries] = useState<string[]>([]);
   const [loadingStep, setLoadingStep] = useState(0);
-  const [roadRaw, setRoadRaw] = useState(null);
+  const [roadRaw, setRoadRaw] = useState<RoadRaw | null>(null);
   const [roadNote, setRoadNote] = useState("");
-  const [predictedGuesses, setPredictedGuesses] = useState([]);
+  const [predictedGuesses, setPredictedGuesses] = useState<PredictedGuess[]>(
+    [],
+  );
   const [reasoning, setReasoning] = useState("");
 
   // --- feedback state ---
-  const [requestId, setRequestId] = useState(null);
-  const [feedbackStatus, setFeedbackStatus] = useState("idle"); // idle | confirmed | correcting | logged
+  const [requestId, setRequestId] = useState<string | null>(null);
+  const [feedbackStatus, setFeedbackStatus] = useState<
+    "idle" | "confirmed" | "correcting" | "logged"
+  >("idle");
   const [correctionQuery, setCorrectionQuery] = useState("");
-  const [countryList, setCountryList] = useState([]);
-  const [countrySuggestions, setCountrySuggestions] = useState([]);
+  const [countryList, setCountryList] = useState<Country[]>([]);
+  const [countrySuggestions, setCountrySuggestions] = useState<Country[]>([]);
   const [loggedCountry, setLoggedCountry] = useState("");
 
   const ANALYSIS_STEPS = [
@@ -56,21 +81,20 @@ export default function Home() {
 
   // fetch the country list once, for the correction search box
   useEffect(() => {
-    fetch("http://localhost:5001/countries")
+    fetch(`${API_URL}/countries`)
       .then((res) => res.json())
       .then(setCountryList)
       .catch((err) => console.error("Error fetching countries:", err));
   }, []);
 
-  const onDrop = async (acceptedFiles) => {
+  const onDrop = async (acceptedFiles: File[]) => {
     const f = acceptedFiles[0];
     if (!f) return;
 
     const previewFile = Object.assign(f, {
       preview: URL.createObjectURL(f),
-    });
+    }) as PreviewFile;
     setFile(previewFile);
-    // setOcrText("");
     setVision({});
     resetFeedback();
 
@@ -78,7 +102,7 @@ export default function Home() {
     const formData = new FormData();
     formData.append("file", f);
     try {
-      const res = await fetch("http://localhost:5001/upload", {
+      const res = await fetch(`${API_URL}/upload`, {
         method: "POST",
         body: formData,
       });
@@ -107,8 +131,7 @@ export default function Home() {
   const removeFile = () => {
     if (file?.preview) URL.revokeObjectURL(file.preview);
     setFile(null);
-    // setOcrText("");
-    setVision([]);
+    setVision({});
     setRoadData([]);
     setRoadRaw(null);
     setRoadNote("");
@@ -128,7 +151,7 @@ export default function Home() {
   const handleFeedbackYes = async () => {
     setFeedbackStatus("confirmed");
     try {
-      await fetch("http://localhost:5001/confirm", {
+      await fetch(`${API_URL}/confirm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ request_id: requestId }),
@@ -142,7 +165,7 @@ export default function Home() {
     setFeedbackStatus("correcting");
   };
 
-  const handleCorrectionSearch = (value) => {
+  const handleCorrectionSearch = (value: string) => {
     setCorrectionQuery(value);
     if (!value.trim()) {
       setCountrySuggestions([]);
@@ -154,13 +177,13 @@ export default function Home() {
     );
   };
 
-  const submitCorrection = async (country) => {
+  const submitCorrection = async (country: Country) => {
     setCorrectionQuery(country.name);
     setCountrySuggestions([]);
     setLoggedCountry(country.name);
     setFeedbackStatus("logged");
     try {
-      await fetch("http://localhost:5001/correct", {
+      await fetch(`${API_URL}/correct`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
