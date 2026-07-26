@@ -30,8 +30,8 @@ export default function Home() {
     "Checking terrain & flora...",
   ];
 
-  const [dockRect, setDockRect] = useState(null);
-  const dockRef = useRef(null);
+  const [dockRect, setDockRect] = useState<DOMRect | null>(null);
+  const dockRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!file) return;
