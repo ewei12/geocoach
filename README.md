@@ -1,6 +1,6 @@
-## Overview
+## GeoCoach
 
-GeoCoach predicts a photo's country of origin by combining:
+Predicts a photo's country of origin by combining:
 - **DINOv2** embeddings (1536-dim) fed into a logistic regression classifier, trained 
   on 234,000 street-view images across 117 countries
 - **CLIP-based** visual reasoning for natural context clues
