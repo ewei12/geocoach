@@ -40,7 +40,15 @@ device = torch.device(
 )
 
 processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
-model = AutoModel.from_pretrained(MODEL_NAME, low_cpu_mem_usage=True).to(device)
+
+# --- fp32 (original) ---------------------------------------------------
+# model = AutoModel.from_pretrained(MODEL_NAME, low_cpu_mem_usage=True).to(device)
+
+# --- fp16 (reduced memory) ---
+model = AutoModel.from_pretrained(
+    MODEL_NAME, low_cpu_mem_usage=True, dtype=torch.float16
+).to(device)
+
 model.eval()
 
 
@@ -49,13 +57,26 @@ def get_embedding(image: Image.Image):
     matching exactly what extract_embeddings.py / expand_full_final.py
     wrote into embeddings.npz, and what both classifiers were trained on."""
     inputs = processor(images=image, return_tensors="pt").to(device)
+
+    # --- fp32 (original) ---------------------------------------------------
+    # with torch.no_grad():
+    #     outputs = model(**inputs)
+
+    # --- fp16 (cast floating-point inputs to match model dtype) --------------------------
+    inputs = {k: v.to(torch.float16) if v.dtype.is_floating_point else v for k, v in inputs.items()}
     with torch.no_grad():
         outputs = model(**inputs)
+
     hidden = outputs.last_hidden_state
     cls_token = hidden[:, 0, :]
     patch_mean = hidden[:, 1:, :].mean(dim=1)
     combined = torch.cat([cls_token, patch_mean], dim=-1)
-    return combined.cpu().numpy()
+
+    # --- fp32 (original) ---------------------------------------------------
+    # return combined.cpu().numpy()
+
+    # --- fp16: cast back to fp32 for the sklearn classifier trained on fp32 ---
+    return combined.float().cpu().numpy()
 
 
 def predict_country(image: Image.Image, top_k=5):
