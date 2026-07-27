@@ -1,8 +1,3 @@
-# GeoCoach
-
-A location classifier by country that predicts where a street-view photo was taken,
-built on DINOv2 embeddings and CLIP-based visual reasoning.
-
 ## Overview
 
 GeoCoach predicts a photo's country of origin by combining:
@@ -11,16 +6,20 @@ GeoCoach predicts a photo's country of origin by combining:
 - **CLIP-based** visual reasoning for natural context clues
 - A candidate-narrowing pipeline that combines both signals with confidence weighting
 
+Inference runs on serverless GPU via Modal, so embeddings are computed live per upload.
+
 ## Performance
 
 **64.7% top-1 accuracy** across 117 countries, evaluated on a held-out test set of 
 46,552 images (split by location sequence to prevent leakage between near-duplicate shots).
 
-## Stack
+## Architecture
 
-- **Frontend**: Next.js
-- - **ML**: Python, DINOv2, CLIP, scikit-learn
-- **Retraining**: `retrain.py` supports versioning from user feedback
+- **Frontend**: Next.js, deployed on Vercel
+- **Backend**: Python, deployed on Modal (serverless GPU inference for DINOv2/CLIP)
+- **Database**: Postgres on Neon — stores feedback/corrections from the confirm/correct 
+  flow, feeding into retraining (`retrain.py`)
+- **ML**: DINOv2 embeddings + CLIP visual reasoning + logistic regression, scikit-learn
 
 ## Acknowledgments
 
