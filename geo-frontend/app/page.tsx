@@ -686,7 +686,7 @@ export default function Home() {
                     textAlignLast: "center",
                   }}
                 >
-                  Geocoach reads the signs, text, and road markings that
+                  GeoCoach reads the signs, text, and road markings that
                   indicate where you are. Upload an image and the app extracts
                   clues such as visible text, road markings, and natural
                   features to explain what they tell us about the location.

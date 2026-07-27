@@ -168,7 +168,7 @@ export default function SupportedMap() {
               color: "rgba(245,240,230,0.65)",
             }}
           >
-            Geocoach is trained on road imagery from countries around the world.
+            GeoCoach is trained on road imagery from countries around the world.
           </p>
 
           <div

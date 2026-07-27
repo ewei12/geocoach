@@ -61,9 +61,13 @@ def main():
 
     y_pred = clf.predict(X_test)
 
+    report_str = classification_report(y_test, y_pred, digits=3)
     print()
     print("--- Classification report ---")
-    print(classification_report(y_test, y_pred, digits=3))
+    print(report_str)
+
+    with open(os.path.join(BASE_DIR, "classification_report.txt"), "w") as f:
+        f.write(report_str)
 
     print(f"confusion matrix saved (not printed, {len(classes)}x{len(classes)} is unreadable)")
     cm = confusion_matrix(y_test, y_pred, labels=classes)
@@ -78,8 +82,14 @@ def main():
                 pairs.append((true_cls, pred_cls, cm[i][j]))
     pairs.sort(key=lambda x: -x[2])
 
+    confusion_lines = []
     for true_cls, pred_cls, count in pairs[:TOP_N_CONFUSION_PAIRS]:
-        print(f"  {true_cls} misclassified as {pred_cls}: {count} times")
+        line = f"  {true_cls} misclassified as {pred_cls}: {count} times"
+        print(line)
+        confusion_lines.append(line)
+
+    with open(os.path.join(BASE_DIR, "confusion_pairs.txt"), "w") as f:
+        f.write("\n".join(confusion_lines))
 
 
 if __name__ == "__main__":
