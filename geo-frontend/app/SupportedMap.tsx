@@ -1,32 +1,134 @@
 "use client";
-
-import { useEffect, useState } from "react";
 import WorldMap from "react-svg-worldmap";
 
+const TRAINED_COUNTRY_CODES: string[] = [
+  "SE",
+  "BO",
+  "BR",
+  "GB",
+  "US",
+  "RU",
+  "HU",
+  "FR",
+  "CA",
+  "TH",
+  "ES",
+  "UZ",
+  "MA",
+  "BD",
+  "NP",
+  "MX",
+  "KW",
+  "LV",
+  "DE",
+  "IT",
+  "PK",
+  "ZM",
+  "AR",
+  "GR",
+  "RW",
+  "NZ",
+  "DO",
+  "JP",
+  "FI",
+  "SK",
+  "PL",
+  "PH",
+  "VN",
+  "SG",
+  "NI",
+  "TW",
+  "BY",
+  "IR",
+  "TZ",
+  "IS",
+  "AL",
+  "AU",
+  "CO",
+  "MY",
+  "HK",
+  "PY",
+  "NO",
+  "HN",
+  "QA",
+  "RO",
+  "NL",
+  "BG",
+  "DK",
+  "ZA",
+  "ID",
+  "LT",
+  "CH",
+  "LK",
+  "IN",
+  "IE",
+  "PT",
+  "NG",
+  "CL",
+  "BN",
+  "MN",
+  "OM",
+  "BH",
+  "DZ",
+  "RS",
+  "EE",
+  "HR",
+  "TR",
+  "BA",
+  "UG",
+  "MD",
+  "MM",
+  "CY",
+  "CZ",
+  "AT",
+  "SI",
+  "BE",
+  "EG",
+  "IL",
+  "GH",
+  "PS",
+  "GT",
+  "TN",
+  "TL",
+  "RE",
+  "EC",
+  "MU",
+  "SN",
+  "UY",
+  "JO",
+  "AE",
+  "ET",
+  "GE",
+  "KR",
+  "PE",
+  "SA",
+  "MZ",
+  "CN",
+  "MK",
+  "PA",
+  "LS",
+  "TM",
+  "LU",
+  "CR",
+  "SL",
+  "AZ",
+  "ML",
+  "LA",
+  "KG",
+  "XK",
+  "KZ",
+  "CD",
+  "SV",
+  "KE",
+  "MR",
+];
+
+const countries = TRAINED_COUNTRY_CODES.map((code) => ({
+  country: code.toLowerCase(),
+  value: 1,
+}));
+
 export default function SupportedMap() {
-  const [countries, setCountries] = useState([]);
-  const [modelInfo, setModelInfo] = useState(null);
-
-  useEffect(() => {
-    fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001"}/supported-countries`,
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setCountries(
-          data.countries.map((code: string) => ({
-            country: code.toLowerCase(),
-            value: 1,
-          })),
-        );
-
-        setModelInfo(data.model);
-      })
-      .catch(console.error);
-  }, []);
-
-  if (!countries.length) return null;
-
   return (
     <section className="w-full mt-20 mb-12">
       <div
@@ -82,22 +184,6 @@ export default function SupportedMap() {
               data={countries}
             />
           </div>
-
-          {/* {modelInfo && (
-            <div
-              className="px-5 py-2 rounded-full text-xs uppercase tracking-widest"
-              style={{
-                color: "#F5F0E6",
-                background: "rgba(245,240,230,0.12)",
-                border: "1px solid rgba(245,240,230,0.22)",
-                backdropFilter: "blur(10px)",
-                fontFamily: "var(--font-commanding)",
-              }}
-            >
-              {countries.length} countries ·{" "}
-              {modelInfo.examples.toLocaleString()} images
-            </div>
-          )} */}
         </div>
       </div>
     </section>
