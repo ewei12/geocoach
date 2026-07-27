@@ -9,7 +9,7 @@ export default function SupportedMap() {
 
   useEffect(() => {
     fetch(
-      `${process.env.NEXT_PUBLIC_VERONA_API_URL || "http://localhost:5001"}/supported-countries`,
+      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001"}/supported-countries`,
     )
       .then((res) => res.json())
       .then((data) => {
