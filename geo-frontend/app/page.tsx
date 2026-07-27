@@ -2,7 +2,9 @@
 import { useDropzone } from "react-dropzone";
 import { useState, useEffect, useRef } from "react";
 import Clouds from "./Clouds";
-import SupportedMap from "./SupportedMap";
+
+import dynamic from "next/dynamic";
+const SupportedMap = dynamic(() => import("./SupportedMap"), { ssr: false });
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
@@ -606,7 +608,7 @@ export default function Home() {
                   userSelect: "none",
                 }}
               >
-                geocoach
+                GEOCOACH
               </h1>
             )}
             {file && (
@@ -619,7 +621,7 @@ export default function Home() {
                     userSelect: "none",
                   }}
                 >
-                  geocoach
+                  GEOCOACH
                 </span>
                 {bigUploadButton}
               </>

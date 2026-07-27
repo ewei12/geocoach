@@ -1,5 +1,7 @@
 "use client";
+
 import WorldMap from "react-svg-worldmap";
+import type { ISOCode } from "react-svg-worldmap";
 
 const TRAINED_COUNTRY_CODES: string[] = [
   "SE",
@@ -126,7 +128,7 @@ const TRAINED_COUNTRY_CODES: string[] = [
 const countries = TRAINED_COUNTRY_CODES.map((code) => ({
   country: code.toLowerCase(),
   value: 1,
-}));
+})) as { country: ISOCode; value: number }[];
 
 export default function SupportedMap() {
   return (
@@ -166,7 +168,7 @@ export default function SupportedMap() {
               color: "rgba(245,240,230,0.65)",
             }}
           >
-            Verona is trained on road imagery from countries around the world.
+            Geocoach is trained on road imagery from countries around the world.
           </p>
 
           <div
@@ -179,9 +181,13 @@ export default function SupportedMap() {
             <WorldMap
               color="#F5E6C8"
               backgroundColor="transparent"
-              value-suffix=" supported"
               size="responsive"
               data={countries}
+              tooltipTextFunction={(context: { countryName: string }) =>
+                context.countryName
+              }
+              tooltipBgColor="rgba(18,25,42,0.95)"
+              tooltipTextColor="#F5E6C8"
             />
           </div>
         </div>
