@@ -10,7 +10,7 @@ Inference runs on serverless GPU via Modal, so embeddings are computed live per 
 
 ## Performance
 
-**64.7% top-1 accuracy** across 117 countries, evaluated on a held-out test set of 
+**64.7% top-1 accuracy** (the model's single best guess was correct) across 117 countries, evaluated on a held-out test set of 
 46,552 images (split by location sequence to prevent leakage between near-duplicate shots).
 
 ## Architecture
