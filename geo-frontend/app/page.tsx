@@ -602,6 +602,7 @@ export default function Home() {
             {!loading && !file && (
               <h1
                 className="text-4xl font-bold"
+                onClick={removeFile}
                 style={{
                   fontFamily: "var(--font-darumadrop)",
                   color: "var(--text-light)",
@@ -615,6 +616,7 @@ export default function Home() {
               <>
                 <span
                   className="text-4xl font-bold"
+                  onClick={removeFile}
                   style={{
                     fontFamily: "var(--font-darumadrop)",
                     color: "var(--text-light)",

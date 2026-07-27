@@ -1,7 +1,7 @@
 # retrain.py
 #
-# Loads current embeddings + whatever's in corrections.pkl, refits
-# scaler + classifier, saves as a new version under model_versions/.
+# Loads current embeddings + whatever's in corrections.pkl, updates the
+# scaler & classifier, saves as a new version under model_versions/.
 #
 # Versioning is additive - v1 builds on base + corrections up to that
 # point, v2 builds on v1 + whatever's been logged since. corrections.pkl
@@ -25,6 +25,7 @@ import joblib
 import numpy as np
 from sklearn.base import clone
 from sklearn.preprocessing import StandardScaler
+from feedback import load_corrections as _load_corrections_from_store, clear_corrections
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -42,15 +43,9 @@ CORRECTION_WEIGHT = 1.0
 
 
 def load_corrections():
-    if not os.path.exists(CORRECTIONS_PATH):
-        raise FileNotFoundError(
-            f"No corrections.pkl found at {CORRECTIONS_PATH}. "
-            "Log at least one correction through the feedback UI first."
-        )
-    with open(CORRECTIONS_PATH, "rb") as f:
-        corrections = pickle.load(f)
+    corrections = _load_corrections_from_store()
     if not corrections:
-        raise ValueError("corrections.pkl exists but is empty — nothing to retrain on.")
+        raise ValueError("No corrections found — log at least one through the feedback UI first.")
     return corrections
 
 
@@ -172,7 +167,8 @@ def main():
     joblib.dump(scaler, os.path.join(version_dir, "scaler.pkl"))
     np.savez(os.path.join(version_dir, "embeddings.npz"), embeddings=X_all, countries=y_all, ids=ids_all)
     # keep the exact corrections that went into this version for reference
-    shutil.copy(CORRECTIONS_PATH, os.path.join(version_dir, "corrections_included.pkl"))
+    with open(os.path.join(version_dir, "corrections_included.pkl"), "wb") as f:
+        pickle.dump(corrections, f)
 
     manifest = {
         "version": version_name,
@@ -201,15 +197,14 @@ def main():
         f.write(version_name)  # points at the new version
 
     # corrections are folded in now, wipe so next retrain doesn't reapply them
-    with open(CORRECTIONS_PATH, "wb") as f:
-        pickle.dump([], f)
-    print(f"  cleared corrections.pkl ({len(corrections)} corrections folded into {version_name})")
+    clear_corrections()
+    print(f"  cleared corrections store ({len(corrections)} corrections folded into {version_name})")
 
     print(f"\nSaved new version: {version_name}  (parent: {parent_version or 'none'})")
     print(f"  {version_dir}/")
     print(f"    country_classifier.pkl")
     print(f"    scaler.pkl")
-    print(f"    embeddings.npz          (cumulative training data — {len(y_all)} examples)")
+    print(f"    embeddings.npz          (cumulative training data - {len(y_all)} examples)")
     print(f"    corrections_included.pkl  (just the {len(y_corr)} corrections added this round)")
     print(f"    manifest.json")
     print(f"\nLive model files updated. Restart app.py to pick up {version_name}.")

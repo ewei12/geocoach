@@ -290,7 +290,7 @@ def narrow_candidates(clip_results, road_markings=None, model_guesses=None, top_
         if margin >= 0.15 and top_pred["confidence"] >= MIN_ABS_CONFIDENCE:
             pool = VEGETATION_REGION.get(top_pred["label"])
             if pool:
-                _add_votes(scores, pool, weight=1 * top_pred["confidence"] * 10)
+                _add_votes(scores, pool, weight=1 * top_pred["confidence"] * 10, normalize_by_pool=True)
                 contributing_clues.append((top_pred["label"], "vegetation", top_pred["confidence"], pool))
         else:
             for pred in preds[:3]:
