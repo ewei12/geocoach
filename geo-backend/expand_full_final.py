@@ -9,6 +9,9 @@
 #   - No raw jpegs are written to the disk
 #   - Dedups against ids already in embeddings.npz so nothing is ever downloaded or embedded twice.
 
+# Training data: OpenStreetView-5M (Astruc et al., CVPR 2024), CC-BY-SA-4.0
+# https://huggingface.co/datasets/osv5m/osv5m
+
 #usage: python expand_full_final.py
 
 import os
