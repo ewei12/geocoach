@@ -1,6 +1,6 @@
 ## GeoCoach
 
-Predicts where a photo was taken using natural surroundings, combining DINOv2 visual embeddings with CLIP-based contextual reasoning.
+Predicts where a photo was taken using natural surroundings, combining DINOv2 visual embeddings with CLIP-based contextual reasoning, and explains the reasoning behind the guess.
 
 ## Overview
 
