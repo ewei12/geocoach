@@ -429,6 +429,36 @@ export default function Home() {
     </div>
   );
 
+  const LOGO_TEXT = "GEOCOACH";
+  const [displayText, setDisplayText] = useState(LOGO_TEXT);
+  const [isScrambling, setIsScrambling] = useState(false);
+
+  const handleLogoClick = () => {
+    if (isScrambling) return;
+    removeFile(); // fires immediately now
+    setIsScrambling(true);
+
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let progress = 0;
+    const interval = setInterval(() => {
+      setDisplayText(
+        LOGO_TEXT.split("")
+          .map((letter, i) =>
+            i < progress
+              ? letter
+              : chars[Math.floor(Math.random() * chars.length)],
+          )
+          .join(""),
+      );
+      progress += 0.4;
+      if (progress >= LOGO_TEXT.length) {
+        clearInterval(interval);
+        setDisplayText(LOGO_TEXT);
+        setIsScrambling(false);
+      }
+    }, 45);
+  };
+
   return (
     <main
       {...getRootProps()}
@@ -601,29 +631,55 @@ export default function Home() {
           <header className="fixed top-0 left-0 w-full z-20 px-6 py-4 flex items-start justify-between">
             {!loading && !file && (
               <h1
-                className="text-4xl font-bold"
-                onClick={removeFile}
+                className={`text-4xl font-bold logo-text ${isScrambling ? "is-scrambling" : ""}`}
+                onClick={handleLogoClick}
                 style={{
                   fontFamily: "var(--font-darumadrop)",
                   color: "var(--text-light)",
                   userSelect: "none",
                 }}
               >
-                GEOCOACH
+                {displayText.split("").map((char, i) => (
+                  <span
+                    key={i}
+                    className="logo-letter"
+                    style={{
+                      ["--i" as any]: i,
+                      ...(isScrambling
+                        ? { color: "var(--text-light)", transform: "none" }
+                        : {}),
+                    }}
+                  >
+                    {char}
+                  </span>
+                ))}
               </h1>
             )}
             {file && (
               <>
                 <span
-                  className="text-4xl font-bold"
-                  onClick={removeFile}
+                  className={`text-4xl font-bold logo-text ${isScrambling ? "is-scrambling" : ""}`}
+                  onClick={handleLogoClick}
                   style={{
                     fontFamily: "var(--font-darumadrop)",
                     color: "var(--text-light)",
                     userSelect: "none",
                   }}
                 >
-                  GEOCOACH
+                  {displayText.split("").map((char, i) => (
+                    <span
+                      key={i}
+                      className="logo-letter"
+                      style={{
+                        ["--i" as any]: i,
+                        ...(isScrambling
+                          ? { color: "var(--text-light)", transform: "none" }
+                          : {}),
+                      }}
+                    >
+                      {char}
+                    </span>
+                  ))}
                 </span>
                 {bigUploadButton}
               </>
