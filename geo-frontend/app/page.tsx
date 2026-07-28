@@ -742,10 +742,10 @@ export default function Home() {
                     textAlignLast: "center",
                   }}
                 >
-                  GeoCoach reads the signs, text, and road markings that
-                  indicate where you are. Upload an image and the app extracts
-                  clues such as visible text, road markings, and natural
-                  features to explain what they tell us about the location.
+                  GeoCoach interprets natural surroundings such as vegetation,
+                  terrain, and climate to figure out where you are. Upload an
+                  image and the app explains what those clues, plus road
+                  markings, tell us about the location.
                 </p>
                 <SupportedMap />
               </div>
