@@ -11,15 +11,14 @@ from transformers import AutoImageProcessor, AutoModel
 from PIL import Image
 import pycountry
 
+import joblib
+from huggingface_hub import hf_hub_download
+
 MODEL_NAME = "facebook/dinov2-base"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MODEL_BACKEND = "logreg"  
 # "logreg" or "xgboost" 
-
-import joblib
-
-from huggingface_hub import hf_hub_download
 
 HF_REPO_ID = os.environ.get("HF_REPO_ID")
 

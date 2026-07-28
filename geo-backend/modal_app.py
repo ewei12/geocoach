@@ -20,7 +20,7 @@ image = (
             "embeddings.npz",       # training embeddings
             "osv5m_filtered",       # training data folder
             "model_versions",       # local model checkpoints
-            "checking",             # misc python files
+            "checking",             # misc python file folder
             "confusion_matrix.npy", 
             "classes.pkl",          
             "corrections.pkl",     
@@ -34,7 +34,6 @@ image = (
 )
 
 app = modal.App("geocoach", image=image)
-
 
 @app.function(
     secrets=[modal.Secret.from_name("geocoach-secrets")],
