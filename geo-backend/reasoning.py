@@ -10,7 +10,7 @@ def generate_reasoning(contributing_clues, narrowed_countries):
         clue_phrases.append((conf, _humanize_clue(label, category)))
 
     if not clue_phrases:
-        return f"{top_country} was the top guess, based mainly on the trained classifier's prediction."
+        return f"{top_country} was the top guess, based mainly on the trained classifier's prediction"
 
     clue_phrases.sort(key=lambda x: x[0], reverse=True)
     top_clues = [phrase for _, phrase in clue_phrases[:3]]
@@ -25,7 +25,7 @@ def generate_reasoning(contributing_clues, narrowed_countries):
         clue_text = f"{', '.join(top_clues[:-1])}, and {top_clues[-1]}"
         verb = "point"
 
-    return f"{clue_text} {verb} most strongly toward {top_country}."
+    return f"{clue_text} {verb} most strongly toward {top_country}"
 
 
 def _humanize_clue(label: str, category: str) -> str:

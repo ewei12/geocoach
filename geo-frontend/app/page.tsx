@@ -744,8 +744,8 @@ export default function Home() {
                 >
                   GeoCoach interprets natural surroundings such as vegetation,
                   terrain, and climate to figure out where you are. Upload an
-                  image and the app explains what those clues, plus road
-                  markings, tell us about the location.
+                  image and the app explains what those clues tell us about the
+                  location.
                 </p>
                 <SupportedMap />
               </div>
