@@ -47,7 +47,7 @@ def is_rate_limited(ip):
 def upload():
     ip = request.headers.get("X-Forwarded-For", request.remote_addr)
     if is_rate_limited(ip):
-        return jsonify({"error": "Demo limit reached. Please contact me if you'd like extended access."}), 429
+        return jsonify({"error": "Demo limit reached."}), 429
 
     file = request.files.get("file")
     if not file:

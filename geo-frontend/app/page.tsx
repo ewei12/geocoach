@@ -115,7 +115,7 @@ export default function Home() {
       if (res.status === 429) {
         const errBody = await res.json().catch(() => ({}) as any);
         setRateLimited(
-          errBody.error || "Demo limit reached. Please contact me if you'd like extended access.",
+          errBody.error || "Demo limit reached.",
         );
         setFile(null);
         return;
