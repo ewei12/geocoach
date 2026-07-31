@@ -51,6 +51,9 @@ export default function Home() {
   const [countrySuggestions, setCountrySuggestions] = useState<Country[]>([]);
   const [loggedCountry, setLoggedCountry] = useState("");
 
+  // --- rate limit ---
+  const [rateLimited, setRateLimited] = useState<string | null>(null);
+
   const ANALYSIS_STEPS = [
     "Scanning for road markings...",
     "Reading any visible signs...",
@@ -108,6 +111,16 @@ export default function Home() {
         method: "POST",
         body: formData,
       });
+
+      if (res.status === 429) {
+        const errBody = await res.json().catch(() => ({}) as any);
+        setRateLimited(
+          errBody.error || "Demo limit reached. Please contact me if you'd like extended access.",
+        );
+        setFile(null);
+        return;
+      }
+
       const data = await res.json();
       console.log(data);
 
@@ -247,6 +260,37 @@ export default function Home() {
         border: "3px dashed var(--accent)",
       }}
     ></div>
+  );
+
+  const rateLimitOverlay = rateLimited && (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{
+        background: "rgba(13, 18, 32, 0.92)",
+        backdropFilter: "blur(6px)",
+      }}
+    >
+      <div
+        className="glass-panel flex flex-col items-center gap-4 px-10 py-12 text-center max-w-md mx-4"
+      >
+        <h2
+          className="text-2xl"
+          style={{
+            fontFamily: "var(--font-headline)",
+            fontWeight: 600,
+            color: "var(--text-light)",
+          }}
+        >
+          Demo limit reached
+        </h2>
+        <p
+          className="text-sm leading-relaxed"
+          style={{ color: "var(--text-muted)" }}
+        >
+          {rateLimited}
+        </p>
+      </div>
+    </div>
   );
 
   // === feedback panel, styled to match the "Evidence" glass-panel ===
@@ -1004,6 +1048,7 @@ export default function Home() {
         </div>
       </div>
       {dragOverlay}
+      {rateLimitOverlay}
     </main>
   );
 }
