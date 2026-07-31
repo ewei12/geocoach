@@ -11,6 +11,7 @@ import modal
 image = (
     modal.Image.debian_slim(python_version="3.13")
     .pip_install_from_requirements("requirements.txt")
+    .env({"ENV": "production"})
     .add_local_dir(
         ".",
         remote_path="/app",

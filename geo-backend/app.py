@@ -1,3 +1,4 @@
+import os
 import uuid
 from dotenv import load_dotenv
 load_dotenv()
@@ -18,15 +19,36 @@ from PIL import Image
 import io
 import time
 from concurrent.futures import ThreadPoolExecutor
+from collections import defaultdict 
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 PENDING = get_pending_store()
 
+# ----- rate limiting -----
+IS_PROD = os.environ.get("ENV") == "production"
+RATE_LIMIT = 5
+WINDOW_SECONDS = 24 * 3600
+_request_log = defaultdict(list)
+
+
+def is_rate_limited(ip):
+    if not IS_PROD:
+        return False
+    now = time.time()
+    _request_log[ip] = [t for t in _request_log[ip] if now - t < WINDOW_SECONDS]
+    if len(_request_log[ip]) >= RATE_LIMIT:
+        return True
+    _request_log[ip].append(now)
+    return False
 
 @app.route("/upload", methods=["POST"])
 def upload():
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+    if is_rate_limited(ip):
+        return jsonify({"error": "Demo limit reached. Please contact me if you'd like extended access."}), 429
+
     file = request.files.get("file")
     if not file:
         return jsonify({"error": "no file"}), 400
