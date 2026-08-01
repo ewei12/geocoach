@@ -13,6 +13,8 @@
 # Run after ~10-20+ corrections, ideally spread across countries/photos,
 # not the same shot corrected repeatedly.
 
+# Run retrain.py then push_to_hf.py to update the hf repo with the new model files.
+
 import os
 import re
 import json
@@ -20,6 +22,9 @@ import pickle
 import shutil
 from collections import Counter
 from datetime import datetime
+
+from dotenv import load_dotenv
+load_dotenv()
 
 import joblib
 import numpy as np

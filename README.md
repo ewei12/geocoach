@@ -21,7 +21,7 @@ Inference runs on serverless GPU via Modal, so embeddings are computed live per 
 ## Architecture
 
 - **Frontend**: Next.js, deployed on Vercel
-- **Backend**: Python, deployed on Modal (serverless GPU inference for DINOv2/CLIP)
+- **Backend**: Python, deployed on Modal
 - **Database**: Postgres on Neon — stores feedback/corrections from the confirm/correct
   flow, feeding into retraining (`retrain.py`)
 - **ML**: DINOv2 embeddings + CLIP visual reasoning + logistic regression, scikit-learn
