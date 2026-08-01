@@ -96,16 +96,27 @@ export default function Home() {
     const f = acceptedFiles[0];
     if (!f) return;
 
-    // check client-side memory first
     const limitedUntil = localStorage.getItem("geocoach_rate_limited_until");
     if (limitedUntil && Date.now() < Number(limitedUntil)) {
       setRateLimited("Demo limit reached.");
       return;
     }
 
-    setLoading(true);
     setVision({});
     resetFeedback();
+
+    let settled = false;
+    const previewFile = Object.assign(f, {
+      preview: URL.createObjectURL(f),
+    }) as PreviewFile;
+
+    // only reveal the loading UI if the request is still pending after a short delay
+    const revealTimer = setTimeout(() => {
+      if (!settled) {
+        setFile(previewFile);
+        setLoading(true);
+      }
+    }, 200);
 
     const formData = new FormData();
     formData.append("file", f);
@@ -114,29 +125,25 @@ export default function Home() {
         method: "POST",
         body: formData,
       });
+      settled = true;
+      clearTimeout(revealTimer);
 
       if (res.status === 429) {
         const errBody = await res.json().catch(() => ({}) as any);
         const message = errBody.error || "Demo limit reached.";
+        setFile(null);
+        URL.revokeObjectURL(previewFile.preview);
+        setLoading(false);
         setRateLimited(message);
-        // remember for 24 hours so we never even hit the backend again today
         localStorage.setItem(
           "geocoach_rate_limited_until",
           String(Date.now() + 24 * 60 * 60 * 1000),
         );
-        setLoading(false);
         return;
       }
 
-      // only now do we show the image
-      const previewFile = Object.assign(f, {
-        preview: URL.createObjectURL(f),
-      }) as PreviewFile;
       setFile(previewFile);
-
       const data = await res.json();
-      console.log(data);
-
       setReasoning(data.reasoning || "");
       setVision(data.vision_raw || {});
       setRoadData(data.road_markings || []);
@@ -146,7 +153,11 @@ export default function Home() {
       setPredictedGuesses(data.predicted_guesses || []);
       setRequestId(data.request_id || null);
     } catch (error) {
+      settled = true;
+      clearTimeout(revealTimer);
       console.error("Error uploading file:", error);
+      setFile(null);
+      URL.revokeObjectURL(previewFile.preview);
     } finally {
       setLoading(false);
     }
@@ -450,8 +461,8 @@ export default function Home() {
         <div className="flex justify-center items-center w-full">
           <img
             src="/a49.png"
-            width="50"
-            height="50"
+            width="100"
+            height="100"
             className="rounded-md"
             alt="Success"
           />

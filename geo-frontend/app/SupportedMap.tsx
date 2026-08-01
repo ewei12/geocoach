@@ -189,6 +189,17 @@ export default function SupportedMap() {
               tooltipBgColor="rgba(18,25,42,0.95)"
               tooltipTextColor="#F5E6C8"
             />
+
+            <p
+              className="w-full text-right text-[10px] uppercase tracking-[0.2em]"
+              style={{
+                color: "rgba(245,240,230,0.4)",
+                fontFamily: "var(--font-commanding)",
+              }}
+            >
+              built by emily wei
+            </p>
+
           </div>
         </div>
       </div>
