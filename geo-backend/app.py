@@ -34,6 +34,7 @@ _request_log = defaultdict(list)
 
 
 def is_rate_limited(ip):
+    # return True #testing purposes only
     if not IS_PROD:
         return False
     now = time.time()

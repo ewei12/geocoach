@@ -96,14 +96,17 @@ export default function Home() {
     const f = acceptedFiles[0];
     if (!f) return;
 
-    const previewFile = Object.assign(f, {
-      preview: URL.createObjectURL(f),
-    }) as PreviewFile;
-    setFile(previewFile);
+    // check client-side memory first
+    const limitedUntil = localStorage.getItem("geocoach_rate_limited_until");
+    if (limitedUntil && Date.now() < Number(limitedUntil)) {
+      setRateLimited("Demo limit reached.");
+      return;
+    }
+
+    setLoading(true);
     setVision({});
     resetFeedback();
 
-    setLoading(true);
     const formData = new FormData();
     formData.append("file", f);
     try {
@@ -114,19 +117,25 @@ export default function Home() {
 
       if (res.status === 429) {
         const errBody = await res.json().catch(() => ({}) as any);
-        setRateLimited(
-          errBody.error || "Demo limit reached.",
+        const message = errBody.error || "Demo limit reached.";
+        setRateLimited(message);
+        // remember for 24 hours so we never even hit the backend again today
+        localStorage.setItem(
+          "geocoach_rate_limited_until",
+          String(Date.now() + 24 * 60 * 60 * 1000),
         );
-        setFile(null);
+        setLoading(false);
         return;
       }
 
+      // only now do we show the image
+      const previewFile = Object.assign(f, {
+        preview: URL.createObjectURL(f),
+      }) as PreviewFile;
+      setFile(previewFile);
+
       const data = await res.json();
       console.log(data);
-
-      console.log(data.vision_raw);
-      console.log(data.predicted_guesses?.length);
-      console.log(Object.keys(data.vision_raw || {}).length);
 
       setReasoning(data.reasoning || "");
       setVision(data.vision_raw || {});
@@ -266,29 +275,66 @@ export default function Home() {
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{
-        background: "rgba(13, 18, 32, 0.92)",
-        backdropFilter: "blur(6px)",
+        background: "rgba(13, 18, 32, 0.85)",
+        backdropFilter: "blur(8px)",
       }}
     >
       <div
-        className="glass-panel flex flex-col items-center gap-4 px-10 py-12 text-center max-w-md mx-4"
+        className="flex flex-col items-center text-center max-w-md mx-4"
+        style={{
+          background: "linear-gradient(135deg, rgba(35,43,69,0.9) 0%, rgba(22,28,48,0.9) 100%)",
+          border: "1px solid rgba(245,240,230,0.14)",
+          borderRadius: "20px",
+          padding: "44px 48px",
+        }}
       >
-        <h2
-          className="text-2xl"
+        <div
           style={{
-            fontFamily: "var(--font-headline)",
+            width: 52,
+            height: 52,
+            borderRadius: "50%",
+            background: "rgba(240,140,120,0.14)",
+            border: "1px solid rgba(240,140,120,0.3)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 18,
+          }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f0947e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <polyline points="12 7 12 12 15 14" />
+          </svg>
+        </div>
+        <h2
+          style={{
+            fontSize: 21,
             fontWeight: 600,
-            color: "var(--text-light)",
+            color: "#f5f0e6",
+            margin: "0 0 10px",
+            letterSpacing: "-0.01em",
+            fontFamily: "var(--font-headline)",
           }}
         >
           Demo limit reached
         </h2>
-        <p
-          className="text-sm leading-relaxed"
-          style={{ color: "var(--text-muted)" }}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            fontSize: 12,
+            color: "rgba(245,240,230,0.4)",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            borderTop: "1px solid rgba(245,240,230,0.1)",
+            paddingTop: 14,
+            width: "100%",
+          }}
         >
-          {rateLimited}
-        </p>
+          Resets daily
+        </div>
       </div>
     </div>
   );
