@@ -56,7 +56,7 @@ export default function Home() {
 
   const ANALYSIS_STEPS = [
     "Scanning for road markings...",
-    "Reading any visible signs...",
+    "Analyzing the architecture...",
     "Checking terrain & flora...",
   ];
 
