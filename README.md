@@ -1,12 +1,12 @@
 ## GeoCoach
 
-Predicts where a photo was taken using natural surroundings, combining DINOv2 visual embeddings with CLIP-based contextual reasoning, and explains the reasoning behind the guess.
+Predicts where a photo was taken using natural surroundings, combining DINOv3 visual embeddings with CLIP-based contextual reasoning, and explains the reasoning behind the guess.
 
 ## Overview
 
 Predicts a photo's country of origin by combining:
 
-- **DINOv2** embeddings (1536-dim) fed into a logistic regression classifier, trained
+- **DINOv3** embeddings (1536-dim) fed into a logistic regression classifier, trained
   on 234,000 street-view images across 117 countries
 - **CLIP-based** visual reasoning for natural context clues
 - A candidate-narrowing pipeline that combines both signals with confidence weighting
@@ -15,7 +15,7 @@ Inference runs on serverless GPU via Modal, so embeddings are computed live per 
 
 ## Performance
 
-**64.7% top-1 accuracy** (the model's single best guess was correct) across 117 countries, evaluated on a held-out test set of
+**70.1% top-1 accuracy** (the model's single best guess was correct) across 117 countries, evaluated on a held-out test set of
 46,552 images (split by location sequence to prevent leakage between near-duplicate shots).
 
 ## Architecture
@@ -23,11 +23,11 @@ Inference runs on serverless GPU via Modal, so embeddings are computed live per 
 - **Frontend**: Next.js, deployed on Vercel
 - **Backend**: Python, deployed on Modal
 - **Database**: Postgres on Neon - stores feedback/corrections, feeding into a retraining file (`retrain.py`)
-- **ML**: DINOv2 embeddings + CLIP visual reasoning + logistic regression, scikit-learn
+- **ML**: DINOv3 embeddings + CLIP visual reasoning + logistic regression, scikit-learn
 
 ## Acknowledgments
 
-Trained using embeddings from [DINOv2](https://github.com/facebookresearch/dinov2) and
+Trained using embeddings from [DINOv3](https://github.com/facebookresearch/dinov3) and
 [CLIP](https://github.com/openai/CLIP).
 
 Training data from [OpenStreetView-5M](https://huggingface.co/datasets/osv5m/osv5m)
