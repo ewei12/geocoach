@@ -56,3 +56,4 @@ typing_extensions
 Werkzeug
 python-dotenv
 psycopg2-binary==2.9.12
+xgboost==3.4.1

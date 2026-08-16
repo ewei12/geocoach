@@ -2,11 +2,11 @@
 
 # Full-dataset expansion across ALL osv-5M countries that meet a minimum image count.
 # Explanation of some behavior:
-#   - PER_COUNTRY_CAP is a TOTAL target so countries already at/above the cap are skipped entirely.
+#   - PER_COUNTRY_CAP is a TOTAL target amount, so countries already at/above the cap are skipped entirely.
 #   - MIN_DATASET_TOTAL filters out countries that don't have enough images
 #     in OSV-5M, computed from a real train.csv fetch (cached locally), across every
 #     country in the dataset.
-#   - No raw jpegs are written to the disk
+#   - No raw jpgs are written to the disk
 #   - Dedups against ids already in embeddings.npz so nothing is ever downloaded or embedded twice.
 
 # Training data: OpenStreetView-5M (Astruc et al., CVPR 2024), CC-BY-SA-4.0

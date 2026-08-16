@@ -10,7 +10,7 @@ from flask_cors import CORS
 from predict import predict_country
 from vision import analyze_image
 from road_markings import analyze_road_markings
-from country_facts import narrow_candidates
+from country_facts import narrow_candidates, COUNTRY_NAME_OVERRIDES, COUNTRY_SEARCH_ALIASES, TRAINED_COUNTRY_CODES
 from reasoning import generate_reasoning
 from feedback import log_correction
 from storage import get_pending_store
@@ -105,26 +105,24 @@ def upload():
 # for the search box
 @app.route("/countries")
 def countries():
-    overrides = {
-        "TR": "Turkey",
-        "BN": "Brunei",
-        "VN": "Vietnam",
-    }
+    result = [
+        {
+            "code": c.alpha_2,
+            "name": COUNTRY_NAME_OVERRIDES.get(c.alpha_2, c.name),
+            "aliases": COUNTRY_SEARCH_ALIASES.get(c.alpha_2, []),
+        }
+        for c in pycountry.countries
+    ]
 
-    result = sorted(
-        [
-            {
-                "code": c.alpha_2,
-                "name": overrides.get(c.alpha_2, c.name),
-            }
-            for c in pycountry.countries
-        ],
-        key=lambda x: x["name"],
-    )
+    # Kosovo (XK) isn't in pycountry's ISO list, but it's in our
+    # training set and shows up in real predictions. Added it manually
+    # so it shows up in the correction search box.
+    result.append({"code": "XK", "name": "Kosovo", "aliases": []})
+
+    result.sort(key=lambda x: x["name"])
     return jsonify(result)
 
 # supported countries for map of data
-from country_facts import TRAINED_COUNTRY_CODES
 @app.get("/supported-countries")
 def supported_countries():
     return {

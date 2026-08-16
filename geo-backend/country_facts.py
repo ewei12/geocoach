@@ -1,4 +1,29 @@
-# country_facts.py
+"""
+country_facts.py
+
+- Everything involving country names and country clues live here.
+
+Provides:
+  - TRAINED_COUNTRY_CODES: the 117 ISO alpha-2 codes the classifier was
+    actually trained on (used to restrict clues below to only the countries the model can predict).
+
+  - COUNTRY_NAME_OVERRIDES / code_to_name(): Used for country display names. 
+    Used by predict.py (prediction results) and app.py's /countries route (correction search box).
+
+  - COUNTRY_SEARCH_ALIASES: alternate/former names (e.g. "Cape Verde" for Cabo Verde) so the 
+    correction search box matches common usage, not just the current official name. 
+    Only for correction search box, does not affect what name is displayed.
+
+  - SIGN_BACKGROUND_COLOR, ROAD_LINE_COLOR, ROAD_LINE_COMBO, ARCHITECTURE_STYLE, VEGETATION_REGION, BOUNDARY_STYLE: 
+    Sections mapping visual clues (e.g. "yellow center line") to the
+    countries where that clue is common, restricted to TRAINED_COUNTRY_CODES  [_only_trained()] 
+    so clue sections never point to a country the classifier doesn't know.
+
+  - narrow_candidates(): combines the raw classifier's top guesses with
+    these clue sections (weighted by confidence) to produce a candidate list and the individual clues that
+    contributed to it. /upload returns this as possible_countries and the reasoning behind it.
+"""
+
 import re
 import pycountry
 
@@ -17,7 +42,9 @@ TRAINED_COUNTRY_CODES = {
 }
 
 # Common/short names to use instead of pycountry's formal ISO names.
-_COMMON_NAMES = {
+# For all country name display, used by code_to_name() - predict.py and 
+# /countries route (correction search box) - app.py
+COUNTRY_NAME_OVERRIDES = {
     "RU": "Russia",
     "KR": "South Korea",
     "BO": "Bolivia",
@@ -33,7 +60,49 @@ _COMMON_NAMES = {
     "VE": "Venezuela",
     "CZ": "Czechia",
     "BN": "Brunei",
-    "VN": "Vietnam",
+    "TR": "Turkey",
+    "CD": "DR Congo",
+    "KP": "North Korea",
+    "FM": "Micronesia",
+    "VA": "Vatican City",
+    "PS": "Palestine",
+    "VG": "British Virgin Islands",
+    "VI": "US Virgin Islands",
+    "BQ": "Bonaire",
+    "CC": "Cocos Islands",
+    "FK": "Falkland Islands",
+    "MF": "Saint Martin",
+    "SH": "Saint Helena",
+    "SX": "Sint Maarten",
+}
+
+# Common alternate/former names people might search for, mapped to the
+# ISO alpha-2 code whose official name has since changed from
+# common usage. 
+# Used by app.py's /countries route (search matching),
+# not by code_to_name (which needs one display name only).
+COUNTRY_SEARCH_ALIASES = {
+    "CV": ["cape verde"],
+    "CZ": ["czech republic"],
+    "SZ": ["swaziland"],
+    "MK": ["macedonia"],
+    "MM": ["burma"],
+    "VG": ["bvi"],
+    "VI": ["usvi", "us virgin islands"],
+    "US": ["usa", "united states of america", "america"],
+    "GB": ["uk", "britain", "great britain"],
+    "AE": ["uae"],
+    "CD": ["democratic republic of congo"],
+    "CG": ["congo brazzaville", "republic of congo"],
+    "CI": ["ivory coast, cote divoire", "cote d'ivoire"],
+    "TL": ["east timor"],
+    "TW": ["republic of china"],
+    "VA": ["vatican"],
+    "BA": ["bosnia"],
+    "NL": ["holland"],
+    "CW": ["curacao"],
+    "AX": ["aland islands", "aland"],
+    "CC": ["keeling islands"],
 }
 
 # Kosovo (XK) isn't in pycountry's standard ISO list
@@ -43,8 +112,8 @@ _MANUAL_NAMES = {"XK": "Kosovo"}
 def code_to_name(code: str) -> str:
     if code in _MANUAL_NAMES:
         return _MANUAL_NAMES[code]
-    if code in _COMMON_NAMES:
-        return _COMMON_NAMES[code]
+    if code in COUNTRY_NAME_OVERRIDES:
+        return COUNTRY_NAME_OVERRIDES[code]
     country = pycountry.countries.get(alpha_2=code)
     return country.name if country else code
 
