@@ -25,7 +25,7 @@ type RoadRaw = {
 };
 
 type PredictedGuess = { country: string; confidence: number };
-type Country = { name: string; code: string };
+type Country = { name: string; code: string; aliases?: string[] };
 
 export default function Home() {
   const [file, setFile] = useState<PreviewFile | null>(null);
@@ -208,7 +208,13 @@ export default function Home() {
     }
     const q = value.toLowerCase();
     setCountrySuggestions(
-      countryList.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 50),
+      countryList
+        .filter(
+          (c) =>
+            c.name.toLowerCase().includes(q) ||
+            (c.aliases || []).some((a) => a.toLowerCase().includes(q)),
+        )
+        .slice(0, 50),
     );
   };
 
