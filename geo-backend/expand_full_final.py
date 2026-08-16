@@ -16,42 +16,45 @@
 
 import os
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-
+ 
+import json
 import csv
 import io
 import time
 import zipfile
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
-
+ 
 os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
-
+ 
 import numpy as np
 import pandas as pd
 import torch
 from huggingface_hub import hf_hub_download, list_repo_files
 from PIL import Image
 from transformers import AutoImageProcessor, AutoModel
-
+ 
 # Configuration ---------------------------------------------------------------------------------
-
-BACKEND_ROOT = Path("/Users/emily/Documents/geocoach-backend")
+ 
+BACKEND_ROOT = Path("/Users/emily/Documents/geo-backend")
 OSV_ROOT = BACKEND_ROOT / "osv5m_filtered"
-LABELS_CSV = OSV_ROOT / "labels.csv"
-EMBEDDINGS_NPZ = BACKEND_ROOT / "embeddings.npz"
-
+LABELS_CSV = OSV_ROOT / "labels_dinov3.csv"
+EMBEDDINGS_NPZ = BACKEND_ROOT / "embeddings_dinov3.npz"
+SCANNED_SHARDS_FILE = BACKEND_ROOT / "scanned_shards.json"
+ 
 # Cached locally after first fetch so re-runs don't re-download train.csv.
 TRAIN_METADATA_CACHE = OSV_ROOT / "train_metadata_cache.csv"
-
+ 
 PER_COUNTRY_CAP = 2000      # TOTAL target per country (existing & new)
 MIN_DATASET_TOTAL = 2000    # skip countries whose image total is below this
-
-MODEL_NAME = "facebook/dinov2-base"
+ 
+# MODEL_NAME = "facebook/dinov2-base"
+MODEL_NAME = "facebook/dinov3-vitb16-pretrain-lvd1689m"
 BATCH_SIZE = 64
 DEVICE = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-
+ 
 CHECKPOINT_EVERY = 1000  # write to disk this often, never lose more than this amt if a crash happens
-
+ 
 CSV_HEADER = [
     "id", "latitude", "longitude", "thumb_original_url", "country",
     "sequence", "captured_at", "lon_bin", "lat_bin", "cell", "region",
@@ -62,8 +65,22 @@ CSV_HEADER = [
     "unique_sub-region", "unique_city", "unique_country",
     "creator_username", "creator_id",
 ]
-
-
+ 
+ 
+def load_scanned_shards():
+    """Set of shard paths that were fully scanned (every entry visited,
+    no early break due to hitting the country cap) in a previous run."""
+    if SCANNED_SHARDS_FILE.exists():
+        with open(SCANNED_SHARDS_FILE) as f:
+            return set(json.load(f))
+    return set()
+ 
+ 
+def save_scanned_shards(scanned):
+    with open(SCANNED_SHARDS_FILE, "w") as f:
+        json.dump(sorted(scanned), f)
+ 
+ 
 def get_train_metadata():
     """Downloads (once) OSV-5M's train.csv and caches it locally, indexed
     by id, so we can look up a shard-zip entry's country without needing
@@ -78,8 +95,8 @@ def get_train_metadata():
         df = pd.read_csv(path, dtype={"id": str}, low_memory=False)
         df.to_csv(TRAIN_METADATA_CACHE, index=False)
     return df.set_index("id")
-
-
+ 
+ 
 def compute_eligible_countries(df, min_total):
     """Every country in OSV-5M with at least `min_total` images overall --
     computed from the real metadata, not a hand-picked list."""
@@ -91,15 +108,16 @@ def compute_eligible_countries(df, min_total):
         print(f"Excluding {len(excluded)} countries below the threshold "
               f"(e.g. {list(excluded.index[:10])}{'...' if len(excluded) > 10 else ''})")
     return eligible
-
-
+ 
+ 
 def list_train_shards():
     print("Listing train shard zips in osv5m/osv5m ...")
     files = list_repo_files(repo_id="osv5m/osv5m", repo_type="dataset")
     shards = sorted(f for f in files if f.startswith("images/train/") and f.endswith(".zip"))
     print(f"Found {len(shards)} shard zips.")
     return shards
-
+ 
+ 
 def verify_shard_naming(shards, df):
     """Downloads the first shard and checks a sample of its filenames
     against train.csv's id column, confirming the '{id}.jpg' assumption
@@ -115,13 +133,13 @@ def verify_shard_naming(shards, df):
         return
     try:
         with zipfile.ZipFile(sample_path) as zf:
-            sample_names = zf.namelist()[:5]
+            sample_names = [n for n in zf.namelist() if not n.endswith("/")][:5]
     finally:
         try:
             os.remove(sample_path)
         except OSError:
             pass
-
+ 
     bad = [n for n in sample_names if Path(n).stem not in df.index]
     if bad:
         raise ValueError(
@@ -130,7 +148,8 @@ def verify_shard_naming(shards, df):
             f"before running against the full dataset."
         )
     print(f"  OK -- sample names match train.csv ids (e.g. {sample_names[:2]})")
-
+ 
+ 
 def load_existing_state():
     """Returns (existing_ids set, per-country counts dict from labels.csv)."""
     existing_ids = set()
@@ -138,7 +157,7 @@ def load_existing_state():
         d = np.load(EMBEDDINGS_NPZ)
         existing_ids = set(d["ids"].tolist())
     print(f"Loaded {len(existing_ids)} existing embedded ids for dedup.")
-
+ 
     counts = {}
     if LABELS_CSV.exists():
         with open(LABELS_CSV, newline="") as f:
@@ -148,8 +167,8 @@ def load_existing_state():
                     counts[c] = counts.get(c, 0) + 1
     print(f"Existing per-country counts loaded for {len(counts)} countries.")
     return existing_ids, counts
-
-
+ 
+ 
 def checkpoint(pending_rows, pending_embeddings, pending_ids, pending_countries):
     """Appends pending data to labels.csv and embeddings.npz, then clears
     it. Safe to call repeatedly -- each call only adds what's new since
@@ -157,7 +176,7 @@ def checkpoint(pending_rows, pending_embeddings, pending_ids, pending_countries)
     images, not the whole run."""
     if not pending_rows:
         return
-
+ 
     file_exists = LABELS_CSV.exists()
     LABELS_CSV.parent.mkdir(parents=True, exist_ok=True)
     with open(LABELS_CSV, "a", newline="") as f:
@@ -165,11 +184,11 @@ def checkpoint(pending_rows, pending_embeddings, pending_ids, pending_countries)
         if not file_exists:
             writer.writeheader()
         writer.writerows(pending_rows)
-
+ 
     new_embeddings = np.stack(pending_embeddings)
     new_ids = np.array(pending_ids, dtype=str)
     new_countries = np.array(pending_countries, dtype=str)
-
+ 
     if EMBEDDINGS_NPZ.exists():
         old = np.load(EMBEDDINGS_NPZ)
         all_embeddings = np.concatenate([old["embeddings"], new_embeddings])
@@ -177,12 +196,12 @@ def checkpoint(pending_rows, pending_embeddings, pending_ids, pending_countries)
         all_countries = np.concatenate([old["countries"].astype(str), new_countries])
     else:
         all_embeddings, all_ids, all_countries = new_embeddings, new_ids, new_countries
-
+ 
     np.savez(EMBEDDINGS_NPZ, embeddings=all_embeddings, ids=all_ids, countries=all_countries)
     print(f"  [checkpoint] wrote {len(pending_rows)} rows -- "
           f"embeddings.npz now has {len(all_ids)} total entries")
-
-
+ 
+ 
 def download_shard_with_retry(shard_path, max_retries=5):
     """shard_path looks like 'images/train/00.zip'. Returns local cache
     path, or None if it genuinely can't be fetched (skip this shard and
@@ -203,32 +222,39 @@ def download_shard_with_retry(shard_path, max_retries=5):
             time.sleep(wait)
     print(f"  Giving up on {shard_path} after {max_retries} attempts -- skipping shard.")
     return None
-
-
+ 
+ 
 def main():
     df = get_train_metadata()
     eligible = compute_eligible_countries(df, MIN_DATASET_TOTAL)
     if not eligible:
         print("No eligible countries -- nothing to do.")
         return
-
+ 
     existing_ids, counts = load_existing_state()
     shards = list_train_shards()
-
+    scanned_shards = load_scanned_shards()
+    print(f"{len(scanned_shards)}/{len(shards)} shards already fully scanned in previous runs -- will skip those.")
+ 
     verify_shard_naming(shards, df)
-
+ 
+    # Only prefetch a shard we're actually going to process.
+    remaining_shards = [s for s in shards if s not in scanned_shards]
     download_pool = ThreadPoolExecutor(max_workers=1)
-    next_shard_future = download_pool.submit(download_shard_with_retry, shards[0]) if shards else None
-
+    next_shard_future = (
+        download_pool.submit(download_shard_with_retry, remaining_shards[0])
+        if remaining_shards else None
+    )
+ 
     print(f"Loading {MODEL_NAME} on {DEVICE} ...")
     processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
     model = AutoModel.from_pretrained(MODEL_NAME).to(DEVICE).eval()
-
+ 
     pending_rows, pending_embeddings, pending_ids, pending_countries = [], [], [], []
     batch_imgs, batch_ids, batch_countries, batch_rows = [], [], [], []
     total_new = 0
     since_checkpoint = 0
-
+ 
     def flush_batch():
         nonlocal batch_imgs, batch_ids, batch_countries, batch_rows
         nonlocal total_new, since_checkpoint
@@ -243,7 +269,7 @@ def main():
             patch_means = hidden[:, 1:, :].mean(dim=1)
             out = torch.cat([cls_tokens, patch_means], dim=-1)
         out = out.cpu().numpy()
-
+ 
         for i in range(len(batch_ids)):
             pending_embeddings.append(out[i])
             pending_ids.append(batch_ids[i])
@@ -251,12 +277,12 @@ def main():
             pending_rows.append(batch_rows[i])
             total_new += 1
             since_checkpoint += 1
-
+ 
         print(f"  ...{total_new} new images embedded so far "
               f"(latest batch: {set(batch_countries)})")
-
+ 
         batch_imgs, batch_ids, batch_countries, batch_rows = [], [], [], []
-
+ 
         if since_checkpoint >= CHECKPOINT_EVERY:
             checkpoint(pending_rows, pending_embeddings, pending_ids, pending_countries)
             pending_rows.clear()
@@ -264,41 +290,47 @@ def main():
             pending_ids.clear()
             pending_countries.clear()
             since_checkpoint = 0
-
-    for i, shard_path in enumerate(shards):
+ 
+    for i, shard_path in enumerate(remaining_shards):
         if all(counts.get(c, 0) >= PER_COUNTRY_CAP for c in eligible):
             print("All eligible countries at cap -- stopping before further shard downloads.")
             break
-
+ 
         print(f"Fetching shard {shard_path} ...")
         local_zip = next_shard_future.result()
-        if i + 1 < len(shards):
-            next_shard_future = download_pool.submit(download_shard_with_retry, shards[i + 1])
+        if i + 1 < len(remaining_shards):
+            next_shard_future = download_pool.submit(download_shard_with_retry, remaining_shards[i + 1])
         if local_zip is None:
             continue
-
+ 
+        # Flips to False below if we break out early because the cap was
+        # hit partway through -- in that case the shard is NOT fully mined
+        # and should stay eligible for a future run with a higher cap.
+        shard_fully_processed = True
+ 
         try:
             with zipfile.ZipFile(local_zip, "r") as zf:
-                names = zf.namelist()
+                names = [n for n in zf.namelist() if not n.endswith("/")]
                 for name in names:
                     if all(counts.get(c, 0) >= PER_COUNTRY_CAP for c in eligible):
+                        shard_fully_processed = False
                         break
-
+ 
                     row_id = Path(name).stem  # assumes '{id}.jpg' -- verify against namelist()[:5]
                     if row_id in existing_ids or row_id not in df.index:
                         continue
-
+ 
                     country = df.at[row_id, "country"]
                     if country not in eligible or counts.get(country, 0) >= PER_COUNTRY_CAP:
                         continue
-
+ 
                     try:
                         img_bytes = zf.read(name)
                         img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
                     except Exception as e:
                         print(f"  Skipping unreadable entry {name}: {e}")
                         continue
-
+ 
                     meta = df.loc[row_id]
                     csv_row = {col: "" for col in CSV_HEADER}
                     csv_row["id"] = row_id
@@ -306,15 +338,15 @@ def main():
                     for col in ("latitude", "longitude", "sequence", "captured_at"):
                         if col in meta:
                             csv_row[col] = meta[col]
-
+ 
                     batch_imgs.append(img)
                     batch_ids.append(row_id)
                     batch_countries.append(country)
                     batch_rows.append(csv_row)
-
+ 
                     counts[country] = counts.get(country, 0) + 1
                     existing_ids.add(row_id)
-
+ 
                     if len(batch_imgs) >= BATCH_SIZE:
                         flush_batch()
         finally:
@@ -323,16 +355,21 @@ def main():
                 os.remove(local_zip)
             except OSError:
                 pass
-
+ 
+        if shard_fully_processed:
+            scanned_shards.add(shard_path)
+            save_scanned_shards(scanned_shards)
+ 
         remaining = sum(1 for c in eligible if counts.get(c, 0) < PER_COUNTRY_CAP)
-        print(f"  {remaining}/{len(eligible)} eligible countries still under cap after this shard.")
-
+        print(f"  {remaining}/{len(eligible)} eligible countries still under cap after this shard "
+              f"({'fully scanned, will skip next time' if shard_fully_processed else 'stopped early, will retry next time'}).")
+ 
     flush_batch()  # remaining partial batch
     checkpoint(pending_rows, pending_embeddings, pending_ids, pending_countries)  # final partial checkpoint
-
+ 
     print(f"\nDone. Embedded {total_new} new images total (no raw jpgs saved).")
     print("Final per-country counts:", {c: counts.get(c, 0) for c in eligible})
-
-
+ 
+ 
 if __name__ == "__main__":
     main()

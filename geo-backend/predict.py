@@ -1,8 +1,11 @@
-# predict.py
+# predict.py - Prediction script for country classification used after training the model. 
 from country_facts import code_to_name
 
 import os
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
+from dotenv import load_dotenv
+load_dotenv()
 
 import pickle
 import numpy as np
@@ -10,11 +13,10 @@ import torch
 from transformers import AutoImageProcessor, AutoModel
 from PIL import Image
 import pycountry
-
 import joblib
 from huggingface_hub import hf_hub_download
 
-MODEL_NAME = "facebook/dinov2-base"
+MODEL_NAME = "facebook/dinov3-vitb16-pretrain-lvd1689m"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MODEL_BACKEND = "logreg"  
