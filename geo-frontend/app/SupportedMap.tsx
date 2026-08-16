@@ -4,125 +4,16 @@ import WorldMap from "react-svg-worldmap";
 import type { ISOCode } from "react-svg-worldmap";
 
 const TRAINED_COUNTRY_CODES: string[] = [
-  "SE",
-  "BO",
-  "BR",
-  "GB",
-  "US",
-  "RU",
-  "HU",
-  "FR",
-  "CA",
-  "TH",
-  "ES",
-  "UZ",
-  "MA",
-  "BD",
-  "NP",
-  "MX",
-  "KW",
-  "LV",
-  "DE",
-  "IT",
-  "PK",
-  "ZM",
-  "AR",
-  "GR",
-  "RW",
-  "NZ",
-  "DO",
-  "JP",
-  "FI",
-  "SK",
-  "PL",
-  "PH",
-  "VN",
-  "SG",
-  "NI",
-  "TW",
-  "BY",
-  "IR",
-  "TZ",
-  "IS",
-  "AL",
-  "AU",
-  "CO",
-  "MY",
-  "HK",
-  "PY",
-  "NO",
-  "HN",
-  "QA",
-  "RO",
-  "NL",
-  "BG",
-  "DK",
-  "ZA",
-  "ID",
-  "LT",
-  "CH",
-  "LK",
-  "IN",
-  "IE",
-  "PT",
-  "NG",
-  "CL",
-  "BN",
-  "MN",
-  "OM",
-  "BH",
-  "DZ",
-  "RS",
-  "EE",
-  "HR",
-  "TR",
-  "BA",
-  "UG",
-  "MD",
-  "MM",
-  "CY",
-  "CZ",
-  "AT",
-  "SI",
-  "BE",
-  "EG",
-  "IL",
-  "GH",
-  "PS",
-  "GT",
-  "TN",
-  "TL",
-  "RE",
-  "EC",
-  "MU",
-  "SN",
-  "UY",
-  "JO",
-  "AE",
-  "ET",
-  "GE",
-  "KR",
-  "PE",
-  "SA",
-  "MZ",
-  "CN",
-  "MK",
-  "PA",
-  "LS",
-  "TM",
-  "LU",
-  "CR",
-  "SL",
-  "AZ",
-  "ML",
-  "LA",
-  "KG",
-  "XK",
-  "KZ",
-  "CD",
-  "SV",
-  "KE",
-  "MR",
+  "SE", "BO", "BR", "GB", "US", "RU", "HU", "FR", "CA", "TH", "ES", "UZ",
+  "MA", "BD", "NP", "MX", "KW", "LV", "DE", "IT", "PK", "ZM", "AR", "GR",
+  "RW", "NZ", "DO", "JP", "FI", "SK", "PL", "PH", "VN", "SG", "NI", "TW",
+  "BY", "IR", "TZ", "IS", "AL", "AU", "CO", "MY", "HK", "PY", "NO", "HN",
+  "QA", "RO", "NL", "BG", "DK", "ZA", "ID", "LT", "CH", "LK", "IN", "IE",
+  "PT", "NG", "CL", "BN", "MN", "OM", "BH", "DZ", "RS", "EE", "HR", "TR",
+  "BA", "UG", "MD", "MM", "CY", "CZ", "AT", "SI", "BE", "EG", "IL", "GH",
+  "PS", "GT", "TN", "TL", "RE", "EC", "MU", "SN", "UY", "JO", "AE", "ET",
+  "GE", "KR", "PE", "SA", "MZ", "CN", "MK", "PA", "LS", "TM", "LU", "CR",
+  "SL", "AZ", "ML", "LA", "KG", "XK", "KZ", "CD", "SV", "KE", "MR",
 ];
 
 const countries = TRAINED_COUNTRY_CODES.map((code) => ({
@@ -142,7 +33,6 @@ export default function SupportedMap() {
           boxShadow: "0 8px 40px rgba(0,0,0,0.35)",
         }}
       >
-        {/* soft glow */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -164,9 +54,7 @@ export default function SupportedMap() {
 
           <p
             className="text-sm text-center max-w-md"
-            style={{
-              color: "rgba(245,240,230,0.65)",
-            }}
+            style={{ color: "rgba(245,240,230,0.65)" }}
           >
             GeoCoach is trained on road imagery from countries around the world.
           </p>
@@ -178,20 +66,26 @@ export default function SupportedMap() {
               opacity: 0.95,
             }}
           >
-            <WorldMap
-              color="#F5E6C8"
-              backgroundColor="transparent"
-              size="responsive"
-              data={countries}
-              tooltipTextFunction={(context: { countryName: string }) =>
-                context.countryName
-              }
-              tooltipBgColor="rgba(18,25,42,0.95)"
-              tooltipTextColor="#F5E6C8"
-            />
+            {/* pointer-events: none kills all mouse hover events and tooltips entirely */}
+            <div className="pointer-events-none select-none">
+              <style jsx global>{`
+                div[class*="react-svg-worldmap-tooltip"],
+                .react-svg-worldmap-tooltip {
+                  display: none !important;
+                }
+              `}</style>
+
+              <WorldMap
+                color="#F5E6C8"
+                backgroundColor="transparent"
+                size="responsive"
+                data={countries}
+                tooltipTextFunction={() => ""}
+              />
+            </div>
 
             <p
-              className="w-full text-right text-[10px] uppercase tracking-[0.2em]"
+              className="w-full text-right text-[10px] uppercase tracking-[0.2em] mt-2"
               style={{
                 color: "rgba(245,240,230,0.4)",
                 fontFamily: "var(--font-commanding)",
@@ -199,7 +93,6 @@ export default function SupportedMap() {
             >
               built by emily wei
             </p>
-
           </div>
         </div>
       </div>
