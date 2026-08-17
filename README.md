@@ -18,6 +18,8 @@ Inference runs on serverless GPU via Modal, so embeddings are computed live per 
 **70.1% top-1 accuracy** (the model's single best guess was correct) across 117 countries, evaluated on a held-out test set of
 46,552 images (split by location sequence to prevent leakage between near-duplicate shots).
 
+**Model comparison**: Tested both XGBoost and logistic regression on the same DINOv3 embeddings and train/test split. Logistic regression performed better (70.1% accuracy and 0.702 macro-F1) vs. XGBoost (62.2% accuracy and 0.621 macro-F1). This suggests that the embeddings may be better suited to a linear classifier than to a nonlinear model like XGBoost.
+
 ## Architecture
 
 - **Frontend**: Next.js, deployed on Vercel
