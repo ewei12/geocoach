@@ -6,26 +6,28 @@ Predicts where a photo was taken using natural surroundings, combining DINOv3 vi
 
 Predicts a photo's country of origin by combining:
 
-- **DINOv3** embeddings (1536-dim) fed into a logistic regression classifier, trained
+- **DINOv3** embeddings (1536-dim) fed into an MLP classifier, trained
   on 234,000 street-view images across 117 countries
 - **CLIP-based** visual reasoning for natural context clues
 - A candidate-narrowing pipeline that combines both signals with confidence weighting
 
-Inference runs on serverless GPU via Modal, so embeddings are computed live per upload.
+Inference runs on Modal's serverless GPUs, so embeddings are computed live for every upload.
 
 ## Performance
 
-**70.1% top-1 accuracy** (the model's single best guess was correct) across 117 countries, evaluated on a held-out test set of
+**73.0% top-1 accuracy** (the model's single best guess was correct) across 117 countries, evaluated on a held-out test set of
 46,552 images (split by location sequence to prevent leakage between near-duplicate shots).
 
-**Model comparison**: Tested both XGBoost and logistic regression on the same DINOv3 embeddings and train/test split. Logistic regression performed better (70.1% accuracy and 0.702 macro-F1) vs. XGBoost (62.2% accuracy and 0.621 macro-F1). This suggests that the embeddings may be better suited to a linear classifier than to a nonlinear model like XGBoost.
+**Model comparison**: Tested logistic regression, an MLP, and XGBoost on the same DINOv3 embeddings and train/test split. The MLP performed best (73.0% accuracy and 0.730 macro-F1), followed by logistic regression (70.1% accuracy and 0.702 macro-F1), with XGBoost performing the worst (62.2% accuracy and 0.621 macro-F1).
+
+Classification errors were mostly for visually similar country clusters rather than spreading evenly across all 117 countries.
 
 ## Architecture
 
 - **Frontend**: Next.js, deployed on Vercel
 - **Backend**: Python, deployed on Modal
 - **Database**: Postgres on Neon - stores feedback/corrections, feeding into a retraining file (`retrain.py`)
-- **ML**: DINOv3 embeddings + CLIP visual reasoning + logistic regression, scikit-learn
+- **ML**: DINOv3 embeddings + CLIP visual reasoning + MLP classifier, scikit-learn
 
 ## Acknowledgments
 

@@ -11,8 +11,8 @@ load_dotenv()
 from huggingface_hub import HfApi
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CLASSIFIER_PATH = os.path.join(BASE_DIR, "country_classifier.pkl")
-SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
+CLASSIFIER_PATH = os.path.join(BASE_DIR, "country_classifier_mlp.pkl")
+SCALER_PATH = os.path.join(BASE_DIR, "scaler_mlp.pkl")
 
 HF_REPO_ID = os.environ.get("HF_REPO_ID")
 

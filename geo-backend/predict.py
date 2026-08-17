@@ -19,16 +19,21 @@ from huggingface_hub import hf_hub_download
 MODEL_NAME = "facebook/dinov3-vitb16-pretrain-lvd1689m"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-MODEL_BACKEND = "logreg"  
-# "logreg" or "xgboost" 
+MODEL_BACKEND = "mlp"  
+# "logreg" or "xgboost" or "mlp"
 
 HF_REPO_ID = os.environ.get("HF_REPO_ID")
 
+#   gets from the HF repo, which is updated by push_to_hf.py
 if MODEL_BACKEND == "xgboost":
     clf = joblib.load(hf_hub_download(repo_id=HF_REPO_ID, filename="country_model.pkl"))
     label_encoder = joblib.load(hf_hub_download(repo_id=HF_REPO_ID, filename="label_encoder.pkl"))
     scaler = None
     classes = label_encoder.classes_
+elif MODEL_BACKEND == "mlp":
+    clf = joblib.load(hf_hub_download(repo_id=HF_REPO_ID, filename="country_classifier.pkl"))
+    scaler = joblib.load(hf_hub_download(repo_id=HF_REPO_ID, filename="scaler.pkl"))
+    classes = clf.classes_
 else:
     clf = joblib.load(hf_hub_download(repo_id=HF_REPO_ID, filename="country_classifier.pkl"))
     scaler = joblib.load(hf_hub_download(repo_id=HF_REPO_ID, filename="scaler.pkl"))
