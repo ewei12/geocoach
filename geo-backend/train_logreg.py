@@ -1,5 +1,20 @@
 """
-Train a logistic regression classifier on cached DINOv3 embeddings after expand_full_final.py has been run. 
+Train a logistic regression classifier on cached DINOv3 embeddings after
+expand_full_final.py has been run.
+
+Utilizes embeddings_dinov3.npz/labels_dinov3.csv and a GroupShuffleSplit-
+by-sequence split.
+
+predict.py's MODEL_BACKEND = "logreg" branch expects country_classifier.pkl
++ scaler.pkl.
+
+This script writes:
+    classification_report_dinov3.txt (full precision/recall/f1 report)
+    confusion_matrix_dinov3.npy (raw confusion matrix)
+    confusion_pairs_dinov3.txt (top 15 confusion pairs)
+    country_classifier_dinov3.pkl (trained logistic regression model)
+    scaler_dinov3.pkl (fitted StandardScaler, needed to transform embeddings at inference time)
+    classes_dinov3.pkl (sorted list of country codes, matches clf.classes_)
 """
 import os
 import numpy as np
