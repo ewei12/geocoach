@@ -466,7 +466,7 @@ export default function Home() {
       {feedbackStatus === "confirmed" && (
         <div className="flex justify-center items-center w-full">
           <img
-            src="/a49.png"
+            src="/cheese.png"
             width="100"
             height="100"
             className="rounded-md"
