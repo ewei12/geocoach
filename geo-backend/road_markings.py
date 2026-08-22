@@ -1,5 +1,6 @@
-# road_markings.py
 """
+road_markings.py
+
 Detects and interprets road/lane markings for GeoGuessr-style reasoning:
 line color (white/yellow), pattern (solid/dashed), count (single/double).
 """
