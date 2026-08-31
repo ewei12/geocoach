@@ -5,16 +5,37 @@
 # Ran after retrain.py, which saves the new pkls locally. 
 
 import os
+from datetime import date
 from dotenv import load_dotenv
 load_dotenv()
 
-from huggingface_hub import HfApi
+from huggingface_hub import HfApi, hf_hub_download
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CLASSIFIER_PATH = os.path.join(BASE_DIR, "country_classifier_mlp.pkl")
 SCALER_PATH = os.path.join(BASE_DIR, "scaler_mlp.pkl")
 
 HF_REPO_ID = os.environ.get("HF_REPO_ID")
+
+
+def backup_live_model(api):
+    """Downloads currently live pkls and reuploads it under a
+    dated backup name, so the current model can be recovered."""
+    tag = date.today().isoformat()
+    for remote_name in ("country_classifier.pkl", "scaler.pkl"):
+        try:
+            old_local = hf_hub_download(repo_id=HF_REPO_ID, filename=remote_name)
+        except Exception as e:
+            print(f"  couldn't back up {remote_name} ({e}) -- continuing anyway")
+            continue
+
+        backup_name = f"backup_{tag}_{remote_name}"
+        api.upload_file(
+            path_or_fileobj=old_local,
+            path_in_repo=backup_name,
+            repo_id=HF_REPO_ID,
+        )
+        print(f"  backed up current {remote_name} -> {backup_name}")
 
 
 def main():
@@ -27,7 +48,10 @@ def main():
 
     api = HfApi()
 
-    print(f"Uploading to {HF_REPO_ID} ...")
+    print(f"Backing up current live model in {HF_REPO_ID} ...")
+    backup_live_model(api)
+
+    print(f"\nUploading new model to {HF_REPO_ID} ...")
     api.upload_file(
         path_or_fileobj=CLASSIFIER_PATH,
         path_in_repo="country_classifier.pkl",

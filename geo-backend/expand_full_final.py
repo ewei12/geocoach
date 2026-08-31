@@ -45,7 +45,7 @@ SCANNED_SHARDS_FILE = BACKEND_ROOT / "scanned_shards.json"
 # Cached locally after first fetch so re-runs don't re-download train.csv.
 TRAIN_METADATA_CACHE = OSV_ROOT / "train_metadata_cache.csv"
  
-PER_COUNTRY_CAP = 2000      # TOTAL target per country (existing & new)
+PER_COUNTRY_CAP = 4000      # TOTAL target per country (existing & new)
 MIN_DATASET_TOTAL = 2000    # skip countries whose image total is below this
  
 # MODEL_NAME = "facebook/dinov2-base"
