@@ -7,25 +7,27 @@ Predicts where a photo was taken using natural surroundings, combining DINOv3 vi
 Predicts a photo's country of origin by combining:
 
 - **DINOv3** embeddings (1536-dim) fed into an MLP classifier, trained
-  on 234,000 street-view images across 117 countries
+  on 449,154 street-view images across 117 countries
 - **CLIP-based** visual reasoning for natural context clues
 - A candidate-narrowing pipeline that combines both signals with confidence weighting
 
-Inference runs on Modal's serverless GPUs, so embeddings are computed live for every upload.
+Inference runs on Modal's serverless platform, so embeddings are computed live for every upload.
 
 ## Performance
 
-**73.0% top-1 accuracy** (the model's single best guess was correct) across 117 countries, evaluated on a held-out test set of
-46,552 images (split by location sequence to prevent leakage between near-duplicate shots).
+**76.2% top-1 accuracy** (the model's single best guess was correct) and 0.761 macro-F1 across 117 countries, evaluated on a held-out test set of
+45,933 images (split by location sequence to prevent leakage between near-duplicate shots).
 
-**Model comparison**: Tested logistic regression, an MLP, and XGBoost on the same DINOv3 embeddings and train/test split. The MLP performed best (73.0% accuracy and 0.730 macro-F1), followed by logistic regression (70.1% accuracy and 0.702 macro-F1), with XGBoost performing the worst (62.2% accuracy and 0.621 macro-F1).
+**Data scaling**: Doubling the training data from 234K to 449K images raised accuracy from 72.4% to 76.2% on the same held-out test set.
+
+**Model comparison on the earlier 234k image dataset**: Tested logistic regression, an MLP, and XGBoost on the same DINOv3 embeddings and train/test split. The MLP performed best (73.0% accuracy and 0.730 macro-F1), followed by logistic regression (70.1% accuracy and 0.702 macro-F1), with XGBoost performing the worst (62.2% accuracy and 0.621 macro-F1).
 
 Classification errors were mostly for visually similar country clusters rather than spreading evenly across all 117 countries.
 
 ## Architecture
 
 - **Frontend**: Next.js, deployed on Vercel
-- **Backend**: Python, deployed on Modal
+- **Backend**: Python/Flask, deployed on Modal
 - **Database**: Postgres on Neon - stores feedback/corrections, feeding into a retraining file (`retrain.py`)
 - **ML**: DINOv3 embeddings + CLIP visual reasoning + MLP classifier, scikit-learn
 
