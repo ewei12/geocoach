@@ -64,8 +64,12 @@ def load_training_data():
     keys: 'embeddings' (X), 'countries' (y), 'ids' - matches
     extract_embeddings.py / expand_full_final.py.
     """
+    seed = os.environ.get("RETRAIN_SEED")
     current = get_current_version()
-    if current:
+    if seed:
+        path = seed
+        source = f"seed file {seed}"
+    elif current:
         path = os.path.join(VERSIONS_DIR, current, "embeddings.npz")
         source = f"version {current}"
     else:

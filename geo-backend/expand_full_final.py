@@ -36,7 +36,7 @@ from transformers import AutoImageProcessor, AutoModel
  
 # Configuration ---------------------------------------------------------------------------------
  
-BACKEND_ROOT = Path("/Users/emily/Documents/geo-backend")
+BACKEND_ROOT = Path(__file__).resolve().parent
 OSV_ROOT = BACKEND_ROOT / "osv5m_filtered"
 LABELS_CSV = OSV_ROOT / "labels_dinov3.csv"
 EMBEDDINGS_NPZ = BACKEND_ROOT / "embeddings_dinov3.npz"
